@@ -46,9 +46,8 @@ class Slicer:
 
     def coverage(self):
         covered_area = 0
-        for block in self.initial_blocks:
-            if block not in self.blocks:
-                covered_area += block.area()
+        for block in self.used_blocks():
+            covered_area += block.area()
         coverage = covered_area / self.surface.area()
         return coverage
 
@@ -61,6 +60,13 @@ class Slicer:
             if block == target_block:
                 self.blocks.remove(block)
                 return
+
+    def used_blocks(self):
+        results = []
+        for block in self.initial_blocks:
+            if block not in self.blocks:
+                results.append(block)
+        return results
 
     def get_slice_pairs(self, orientation):
         results = []
@@ -221,21 +227,32 @@ class Slicer:
             self.up.report_solution(loglevel + 1)
             self.bottom.report_solution(loglevel + 1)
 
-    def draw_solution(self, screen, unit, origin, line):
+    def draw_solution(self, screen, unit, origin, line, rect, used_blocks=None):
+        from pygame import Rect
+        if not used_blocks:
+            used_blocks = self.used_blocks()
+
         if hasattr(self, 'left'):
-            print(f'Vertical slice at {self.left.surface.w}')
             line(screen, (0, 0, 0),
                  (origin[0] + self.left.surface.w * unit, origin[1]),
-                 (origin[0] + self.left.surface.w * unit, origin[1] + self.left.surface.h * unit), 3)
-            self.left.draw_solution(screen, unit, origin, line)
-            self.right.draw_solution(screen, unit, (origin[0] + self.left.surface.w * unit, origin[1]), line)
+                 (origin[0] + self.left.surface.w * unit, origin[1] + self.left.surface.h * unit), 2)
+
+            self.left.draw_solution(screen, unit, origin, line, rect, used_blocks)
+            self.right.draw_solution(screen, unit, (origin[0] + self.left.surface.w * unit, origin[1]), line, rect, used_blocks)
 
         elif hasattr(self, 'up'):
-            print(f'Horizontal slice at {self.bottom.surface.h}')
             line(screen, (0, 0, 0),
                  (origin[0], origin[1] + self.up.surface.h * unit),
-                 (origin[0] + self.up.surface.w * unit, origin[1] + self.up.surface.h * unit), 3)
-            self.up.draw_solution(screen, unit, origin, line)
-            self.bottom.draw_solution(screen, unit, (origin[0], origin[1] + self.up.surface.h * unit), line)
+                 (origin[0] + self.up.surface.w * unit, origin[1] + self.up.surface.h * unit), 2)
+            self.up.draw_solution(screen, unit, origin, line, rect, used_blocks)
+            self.bottom.draw_solution(screen, unit, (origin[0], origin[1] + self.up.surface.h * unit), line, rect, used_blocks)
+
+        else:
+            if self.surface in used_blocks:
+                used_blocks.remove(self.surface)
+            else:
+                r = Rect(origin[0], origin[1], self.surface.w * unit, self.surface.h * unit)
+                rect(screen, (200, 100, 100), r)
+                rect(screen, (0, 0, 0), r, 2)
 
 

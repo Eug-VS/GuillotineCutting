@@ -18,7 +18,8 @@ draw_area.fill((255, 255, 255))
 pygame.font.init()
 
 
-surface = Shape(10, 10)
+surface = Shape(K, K)
+blocks = list(random_shape(surface) for i in range(K))
 blocks = [Shape(4, 3),
           Shape(2, 2),
           Shape(2, 3),
@@ -33,6 +34,7 @@ blocks = [Shape(4, 3),
           ]
 S = Slicer(surface, blocks)
 S.solve()
+S.report_coverage()
 
 
 def grid(area, k):
@@ -49,9 +51,7 @@ while RUNNING:
             RUNNING = False
 
     grid(draw_area, K)
-    print('Drawing')
-    S.report_solution()
-    S.draw_solution(draw_area, int(SIDE / K), (0, 0), pygame.draw.line)
+    S.draw_solution(draw_area, int(SIDE / K), (0, 0), pygame.draw.line, pygame.draw.rect)
 
     screen.fill((150, 150, 200))
     screen.blit(draw_area, ((WIDTH-SIDE)/2, (HEIGHT-SIDE)/2))
