@@ -25,7 +25,7 @@ def random_shape(shape):
     return Shape(randint(1, shape.h), randint(1, shape.w))
 
 
-def find_slice(surface, blocks, orientation):
+def slice_pair(surface, blocks, orientation):
     results = []
     for block in blocks:
         for other in blocks:
@@ -43,9 +43,9 @@ def find_slice(surface, blocks, orientation):
     return results
 
 
-def find_slice_horizontal(surface, blocks):
-    return find_slice(surface, blocks, "horizontal")
+def slice_pair_horizontal(surface, blocks):
+    return slice_pair(surface, blocks, "horizontal")
 
 
-def find_slice_vertical(surface, blocks):
-    return find_slice(surface, blocks, "vertical")
+def slice_pair_vertical(surface, blocks):
+    return slice_pair(surface, blocks, "vertical")
