@@ -35,7 +35,7 @@ class Slicer:
         s += "\n -".join(str(block) for block in self.blocks)
         return s
 
-    def slice_pair(self, orientation):
+    def get_slice_pairs(self, orientation):
         results = []
         for block in self.blocks:
             for other in self.blocks:
@@ -52,8 +52,8 @@ class Slicer:
                     results.remove(other)
         return results
 
-    def slice_pair_horizontal(self):
-        return self.slice_pair("horizontal")
+    def get_slice_pairs_horizontal(self):
+        return self.get_slice_pairs("horizontal")
 
-    def slice_pair_vertical(self):
-        return self.slice_pair("vertical")
+    def get_slice_pairs_vertical(self):
+        return self.get_slice_pairs("vertical")
