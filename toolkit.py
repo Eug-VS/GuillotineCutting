@@ -1,6 +1,6 @@
 from random import randint, seed
 
-seed(4)
+seed(0)
 
 
 class Shape:
@@ -29,7 +29,7 @@ class Shape:
 
 
 def random_shape(shape):
-    return Shape(randint(1, shape.h), randint(1, shape.w))
+    return Shape(randint(1, int(shape.h*0.7)), randint(1, int(shape.w*0.7)))
 
 
 class Slicer:
@@ -121,34 +121,46 @@ class Slicer:
         print("Horizontal slices:\n", h_pairs)
 
         if len(v_pairs) == 1 and len(h_pairs) == 1:
-            print("I don't know which slice to choose: vertical or horizontal?")
-            if v_block_pairs[0][1].stub:
+            if v_block_pairs[0][1].stub and h_block_pairs[0][1].stub:
+                print('Both vertical and horizontal slices fit...')
+                v_area = v_block_pairs[0][0].area()
+                h_area = h_block_pairs[0][0].area()
+                if v_area > h_area:
+                    print('...but vertical slice has more area value!')
+                    h_pairs = []
+                else:
+                    print('...but horizontal slice has more area value!')
+                    v_pairs = []
+            elif v_block_pairs[0][1].stub:
+                print('Vertical slice fits better!')
                 h_pairs = []
             else:
+                print('Horizontal slice fits better!')
                 v_pairs = []
 
         if len(v_pairs) == 1:
             print("The only possible vertical slice found. Go!")
 
             left_surface = Shape(self.surface.h, v_pairs[0][0])
+            right_surface = Shape(self.surface.h, v_pairs[0][1])
+
             for block in self.blocks:
                 if block == left_surface:
                     print('(!) Left part of the slice corresponds to the block:')
                     self.use_block(block)
                     left_surface = None
                     break
-            if left_surface:
-                left = Slicer(left_surface, self.blocks)
-                print("Left: ", left)
-                self.blocks = left.solve()
-
-            right_surface = Shape(self.surface.h, v_pairs[0][1])
             for block in self.blocks:
                 if block == right_surface:
                     print('(!) Right part of the slice corresponds to the block:')
                     self.use_block(block)
                     right_surface = None
                     break
+
+            if left_surface:
+                left = Slicer(left_surface, self.blocks)
+                print("Left: ", left)
+                self.blocks = left.solve()
             if right_surface:
                 right = Slicer(right_surface, self.blocks)
                 print("Right: ", right)
@@ -158,24 +170,26 @@ class Slicer:
             print("The only possible horizontal slice found. Go!")
 
             up_surface = Shape(h_pairs[0][1], self.surface.w)
+            bottom_surface = Shape(h_pairs[0][0], self.surface.w)
+
             for block in self.blocks:
                 if block == up_surface:
                     print('(!) Upper part of the slice corresponds to the block:')
                     self.use_block(block)
                     up_surface = None
                     break
-            if up_surface:
-                up = Slicer(up_surface, self.blocks)
-                print("Up: ", up)
-                self.blocks = up.solve()
-
-            bottom_surface = Shape(h_pairs[0][0], self.surface.w)
             for block in self.blocks:
                 if block == bottom_surface:
                     print('(!) Bottom part of the slice corresponds to the block:')
                     self.use_block(block)
                     bottom_surface = None
                     break
+
+            if up_surface:
+                up = Slicer(up_surface, self.blocks)
+                print("Up: ", up)
+                self.blocks = up.solve()
+
             if bottom_surface:
                 bottom = Slicer(bottom_surface, self.blocks)
                 print("Bottom: ", bottom)
