@@ -1,4 +1,4 @@
-from toolkit import Shape
+from toolkit import Shape, random_shape
 
 M = 4
 N = 5
