@@ -9,3 +9,4 @@ blocks = [Shape(3, 2), Shape(2, 2), Shape(2, 1), Shape(2, 3), Shape(1, 2)]
 S = Slicer(surface, blocks)
 print(S)
 
+S.solve()

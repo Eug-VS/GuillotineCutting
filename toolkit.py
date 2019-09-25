@@ -4,12 +4,16 @@ seed(0)
 
 
 class Shape:
-    def __init__(self, h, w):
+    def __init__(self, h, w, stub=False):
         self.h = h
         self.w = w
+        self.stub = stub
 
     def __str__(self):
-        return f'Shape({self.h} x {self.w})'
+        if not self.stub:
+            return f'Shape({self.h} x {self.w})'
+        else:
+            return f'Stub-Shape({self.h} x {self.w})'
 
     def __repr__(self):
         return self.__str__()
@@ -19,6 +23,9 @@ class Shape:
 
     def area(self):
         return self.h * self.w
+
+    def inscribes(self, other):
+        return other.h <= self.h and other.w <= self.w
 
 
 def random_shape(shape):
@@ -38,14 +45,27 @@ class Slicer:
     def get_slice_pairs(self, orientation):
         results = []
         for block in self.blocks:
-            for other in self.blocks:
-                if other != block:
-                    if orientation == "horizontal":
-                        if block.h + other.h == self.surface.h:
-                            results.append((block, other))
-                    elif orientation == "vertical":
-                        if block.w + other.w == self.surface.w:
-                            results.append((block, other))
+            if self.surface.inscribes(block):
+                if block == self.surface:
+                    print(f'(!) Block {block} fits just into the surface!')
+                    return block
+                if orientation == "horizontal" and block.w == self.surface.w:
+                    stub = Shape(self.surface.h - block.h, block.w, stub=True)
+                    print(f'(!) Block {block} takes all width of surface {self.surface}. Creating {stub}')
+                    return [(block, stub)]
+                elif orientation == "vertical" and block.h == self.surface.h:
+                    stub = Shape(block.h, self.surface.w - block.w, stub=True)
+                    print(f'(!) Block {block} takes all height of surface {self.surface}. Creating {stub}')
+                    return [(block, stub)]
+                else:
+                    for other in self.blocks:
+                        if other != block:
+                            if orientation == "horizontal":
+                                if block.h + other.h == self.surface.h:
+                                    results.append((block, other))
+                            elif orientation == "vertical":
+                                if block.w + other.w == self.surface.w:
+                                    results.append((block, other))
         for pair in results:
             for other in results:
                 if other == (pair[1], pair[0]):
@@ -53,7 +73,73 @@ class Slicer:
         return results
 
     def get_slice_pairs_horizontal(self):
-        return self.get_slice_pairs("horizontal")
+        slice_pairs = self.get_slice_pairs("horizontal")
+        if type(slice_pairs) is list:
+            if len(slice_pairs):
+                print("Horizontal block pairs:\n\t" + "\n\t".join(str(pair) for pair in slice_pairs))
+        return slice_pairs
 
     def get_slice_pairs_vertical(self):
-        return self.get_slice_pairs("vertical")
+        slice_pairs = self.get_slice_pairs("vertical")
+        if type(slice_pairs) is list:
+            if len(slice_pairs):
+                print("Vertical block pairs:\n\t" + "\n\t".join(str(pair) for pair in slice_pairs))
+        return slice_pairs
+
+    def solve(self):
+        v_block_pairs = self.get_slice_pairs_vertical()
+        if type(v_block_pairs) is not list:
+            return
+        h_block_pairs = self.get_slice_pairs_horizontal()
+        if type(h_block_pairs) is not list:
+            return
+        v_pairs = []
+        h_pairs = []
+
+        for block_pair in v_block_pairs:
+            l = block_pair[0].w
+            r = block_pair[1].w
+            if (l, r) not in v_pairs and (r, l) not in v_pairs:
+                v_pairs.append((l, r))
+
+        for block_pair in h_block_pairs:
+            u = block_pair[0].h
+            d = block_pair[1].h
+            if (u, d) not in h_pairs and (d, u) not in h_pairs:
+                h_pairs.append((u, d))
+
+        print("Vertical slices:\n", v_pairs)
+        print("Horizontal slices:\n", h_pairs)
+
+        if len(v_pairs) == 1 and len(h_pairs) == 1:
+            print("I don't know which slice to choose: vertical or horizontal?")
+            if v_block_pairs[0][1].stub:
+                h_pairs = []
+            else:
+                v_pairs = []
+
+        if len(v_pairs) == 1:
+            print("The only possible vertical slice found. Go!")
+
+            left_surface = Shape(self.surface.h, v_pairs[0][0])
+            left = Slicer(left_surface, self.blocks)
+            print("Left: ", left)
+            left.solve()
+
+            right_surface = Shape(self.surface.h, v_pairs[0][1])
+            right = Slicer(right_surface, self.blocks)
+            print("Right: ", right)
+            right.solve()
+
+        elif len(h_pairs) == 1:
+            print("The only possible horizontal slice found. Go!")
+
+            up_surface = Shape(h_pairs[0][1], self.surface.w)
+            up = Slicer(up_surface, self.blocks)
+            print("Up: ", up)
+            up.solve()
+
+            down_surface = Shape(h_pairs[0][0], self.surface.w)
+            down = Slicer(down_surface, self.blocks)
+            print("Down: ", down)
+            down.solve()
