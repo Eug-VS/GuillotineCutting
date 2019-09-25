@@ -1,17 +1,15 @@
 from toolkit import *
 from unittest import TestCase, main
 
-surface = Shape(4, 5)
-blocks = [Shape(3, 2), Shape(2, 2), Shape(2, 1), Shape(2, 3), Shape(1, 2)]
 
-
-class ToolkitTestCase(TestCase):
+class SlicerTestCase(TestCase):
     def setUp(self):
-        self.surface = Shape(4, 5)
-        self.blocks = [Shape(3, 2), Shape(2, 2), Shape(2, 1), Shape(2, 3), Shape(1, 2)]
+        surface = Shape(4, 5)
+        blocks = [Shape(3, 2), Shape(2, 2), Shape(2, 1), Shape(2, 3), Shape(1, 2)]
+        self.slicer = Slicer(surface, blocks)
 
     def test_slice_pair_horizontal(self):
-        assert slice_pair_horizontal(surface, blocks) == [
+        assert self.slicer.slice_pair_horizontal() == [
             (Shape(3, 2), Shape(1, 2)),
             (Shape(2, 2), Shape(2, 1)),
             (Shape(2, 2), Shape(2, 3)),
@@ -19,7 +17,7 @@ class ToolkitTestCase(TestCase):
         ], "Horizontal slice doesn't work"
 
     def test_slice_pair_vertical(self):
-        assert slice_pair_vertical(surface, blocks) == [
+        assert self.slicer.slice_pair_vertical() == [
             (Shape(3, 2), Shape(2, 3)),
             (Shape(2, 2), Shape(2, 3)),
             (Shape(2, 3), Shape(1, 2)),

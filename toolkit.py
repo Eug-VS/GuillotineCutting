@@ -25,27 +25,35 @@ def random_shape(shape):
     return Shape(randint(1, shape.h), randint(1, shape.w))
 
 
-def slice_pair(surface, blocks, orientation):
-    results = []
-    for block in blocks:
-        for other in blocks:
-            if other != block:
-                if orientation == "horizontal":
-                    if block.h + other.h == surface.h:
-                        results.append((block, other))
-                elif orientation == "vertical":
-                    if block.w + other.w == surface.w:
-                        results.append((block, other))
-    for pair in results:
-        for other in results:
-            if other == (pair[1], pair[0]):
-                results.remove(other)
-    return results
+class Slicer:
+    def __init__(self, surface, blocks):
+        self.surface = surface
+        self.blocks = blocks
 
+    def __str__(self):
+        s = f'Slicer with surface {self.surface} and blocks:\n -'
+        s += "\n -".join(str(block) for block in self.blocks)
+        return s
 
-def slice_pair_horizontal(surface, blocks):
-    return slice_pair(surface, blocks, "horizontal")
+    def slice_pair(self, orientation):
+        results = []
+        for block in self.blocks:
+            for other in self.blocks:
+                if other != block:
+                    if orientation == "horizontal":
+                        if block.h + other.h == self.surface.h:
+                            results.append((block, other))
+                    elif orientation == "vertical":
+                        if block.w + other.w == self.surface.w:
+                            results.append((block, other))
+        for pair in results:
+            for other in results:
+                if other == (pair[1], pair[0]):
+                    results.remove(other)
+        return results
 
+    def slice_pair_horizontal(self):
+        return self.slice_pair("horizontal")
 
-def slice_pair_vertical(surface, blocks):
-    return slice_pair(surface, blocks, "vertical")
+    def slice_pair_vertical(self):
+        return self.slice_pair("vertical")
