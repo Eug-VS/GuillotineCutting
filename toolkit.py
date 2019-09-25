@@ -1,7 +1,5 @@
 from random import randint, seed
 
-seed(0)
-
 
 class Shape:
     def __init__(self, h, w, stub=False):
@@ -35,12 +33,24 @@ def random_shape(shape):
 class Slicer:
     def __init__(self, surface, blocks):
         self.surface = surface
+        self.initial_blocks = blocks.copy()
         self.blocks = blocks
 
     def __str__(self):
         s = f'Slicer with surface {self.surface} and blocks:\n -'
         s += "\n -".join(str(block) for block in self.blocks)
         return s
+
+    def coverage(self):
+        covered_area = 0
+        for block in self.initial_blocks:
+            if block not in self.blocks:
+                covered_area += block.area()
+        coverage = covered_area / self.surface.area()
+        return coverage
+
+    def report_coverage(self):
+        print(f'Total coverage for slicer: {self.coverage()*100}%')
 
     def use_block(self, target_block):
         print(f'Using block {target_block}')
