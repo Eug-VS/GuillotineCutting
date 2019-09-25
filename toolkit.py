@@ -41,6 +41,9 @@ class Slicer:
         s += "\n -".join(str(block) for block in self.blocks)
         return s
 
+    def __str__(self):
+        return f'Slicer with surface {self.surface}'
+
     def coverage(self):
         covered_area = 0
         for block in self.initial_blocks:
@@ -152,7 +155,10 @@ class Slicer:
             print("The only possible vertical slice found. Go!")
 
             left_surface = Shape(self.surface.h, v_pairs[0][0])
+            self.left = Slicer(left_surface, self.blocks)
+
             right_surface = Shape(self.surface.h, v_pairs[0][1])
+            self.right = Slicer(right_surface, self.blocks)
 
             for block in self.blocks:
                 if block == left_surface:
@@ -168,19 +174,20 @@ class Slicer:
                     break
 
             if left_surface:
-                left = Slicer(left_surface, self.blocks)
-                print("Left: ", left)
-                self.blocks = left.solve()
+                print("Left: ", self.left)
+                self.blocks = self.left.solve()
             if right_surface:
-                right = Slicer(right_surface, self.blocks)
-                print("Right: ", right)
-                self.blocks = right.solve()
+                print("Right: ", self.right)
+                self.blocks = self.right.solve()
 
         elif len(h_pairs):
             print("The only possible horizontal slice found. Go!")
 
             up_surface = Shape(h_pairs[0][1], self.surface.w)
+            self.up = Slicer(up_surface, self.blocks)
+
             bottom_surface = Shape(h_pairs[0][0], self.surface.w)
+            self.bottom = Slicer(bottom_surface, self.blocks)
 
             for block in self.blocks:
                 if block == up_surface:
@@ -196,13 +203,39 @@ class Slicer:
                     break
 
             if up_surface:
-                up = Slicer(up_surface, self.blocks)
-                print("Up: ", up)
-                self.blocks = up.solve()
+                print("Up: ", self.up)
+                self.blocks = self.up.solve()
 
             if bottom_surface:
-                bottom = Slicer(bottom_surface, self.blocks)
-                print("Bottom: ", bottom)
-                self.blocks = bottom.solve()
+                print("Bottom: ", self.bottom)
+                self.blocks = self.bottom.solve()
 
         return self.blocks
+
+    def report_solution(self, loglevel=0):
+        print('\t'*loglevel + str(self.surface))
+        if hasattr(self, 'left'):
+            self.left.report_solution(loglevel + 1)
+            self.right.report_solution(loglevel + 1)
+        elif hasattr(self, 'up'):
+            self.up.report_solution(loglevel + 1)
+            self.bottom.report_solution(loglevel + 1)
+
+    def draw_solution(self, screen, unit, origin, line):
+        if hasattr(self, 'left'):
+            print(f'Vertical slice at {self.left.surface.w}')
+            line(screen, (0, 0, 0),
+                 (origin[0] + self.left.surface.w * unit, origin[1]),
+                 (origin[0] + self.left.surface.w * unit, origin[1] + self.left.surface.h * unit), 3)
+            self.left.draw_solution(screen, unit, origin, line)
+            self.right.draw_solution(screen, unit, (origin[0] + self.left.surface.w * unit, origin[1]), line)
+
+        elif hasattr(self, 'up'):
+            print(f'Horizontal slice at {self.bottom.surface.h}')
+            line(screen, (0, 0, 0),
+                 (origin[0], origin[1] + self.up.surface.h * unit),
+                 (origin[0] + self.up.surface.w * unit, origin[1] + self.up.surface.h * unit), 3)
+            self.up.draw_solution(screen, unit, origin, line)
+            self.bottom.draw_solution(screen, unit, (origin[0], origin[1] + self.up.surface.h * unit), line)
+
+
