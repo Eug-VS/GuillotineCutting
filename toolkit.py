@@ -14,8 +14,11 @@ class Shape:
     def __repr__(self):
         return self.__str__()
 
+    def __eq__(self, other):
+        return self.h == other.h and self.w == other.w
+
     def area(self):
-        return self.w * self.h
+        return self.h * self.w
 
 
 def random_shape(shape):
