@@ -166,7 +166,7 @@ class Slicer:
                 print("Right: ", right)
                 self.blocks = right.solve()
 
-        elif len(h_pairs) == 1:
+        elif len(h_pairs):
             print("The only possible horizontal slice found. Go!")
 
             up_surface = Shape(h_pairs[0][1], self.surface.w)
